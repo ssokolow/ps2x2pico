@@ -60,6 +60,10 @@ void tuh_hid_mount_cb(u8 dev_addr, u8 instance, u8 const* desc_report, u16 desc_
       //tuh_hid_set_protocol(dev_addr, instance, HID_PROTOCOL_REPORT);
       tuh_hid_receive_report(dev_addr, instance);
     break;
+    
+    default:
+      tuh_hid_receive_report(dev_addr, instance);
+    break;
   }
 }
 
@@ -83,6 +87,13 @@ void tuh_hid_report_received_cb(u8 dev_addr, u8 instance, u8 const* report, u16 
     
     case HID_ITF_PROTOCOL_MOUSE:
       ms_usb_receive(report);
+      tuh_hid_receive_report(dev_addr, instance);
+    break;
+    
+    default:
+      printf("  %02x  ", len);
+      printf("%02x %02x %02x %02x %02x %02x %02x %02x ", report[0], report[1], report[2], report[3], report[4], report[5], report[6], report[7]);
+      //printf("%02x %02x %02x %02x %02x %02x %02x %02x\n", report[8], report[9], report[10], report[11], report[12], report[13], report[14], report[15]);
       tuh_hid_receive_report(dev_addr, instance);
     break;
   }

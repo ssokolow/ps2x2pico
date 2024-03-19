@@ -24,6 +24,7 @@
  *
  */
 
+#include "hardware/watchdog.h"
 #include "hardware/gpio.h"
 #include "bsp/board.h"
 #include "tusb.h"
@@ -50,15 +51,17 @@ void tuh_hid_mount_cb(u8 dev_addr, u8 instance, u8 const* desc_report, u16 desc_
       
       kb_addr = dev_addr;
       kb_inst = instance;
-      kb_reset();
+      //kb_reset();
       
       tuh_hid_receive_report(dev_addr, instance);
+      board_led_write(1);
     break;
     
     case HID_ITF_PROTOCOL_MOUSE:
       printf("HID Interface Protocol = Mouse\n");
       //tuh_hid_set_protocol(dev_addr, instance, HID_PROTOCOL_REPORT);
       tuh_hid_receive_report(dev_addr, instance);
+      board_led_write(1);
     break;
     
     default:
@@ -68,7 +71,8 @@ void tuh_hid_mount_cb(u8 dev_addr, u8 instance, u8 const* desc_report, u16 desc_
 }
 
 void tuh_hid_umount_cb(u8 dev_addr, u8 instance) {
-  printf("HID device address = %d, instance = %d is unmounted\r\n", dev_addr, instance);
+  printf("HID device address = %d, instance = %d is unmounted\n", dev_addr, instance);
+  board_led_write(0);
   
   if(dev_addr == kb_addr && instance == kb_inst) {
     kb_addr = 0;
@@ -77,8 +81,6 @@ void tuh_hid_umount_cb(u8 dev_addr, u8 instance) {
 }
 
 void tuh_hid_report_received_cb(u8 dev_addr, u8 instance, u8 const* report, u16 len) {
-  board_led_write(1);
-  
   switch(tuh_hid_interface_protocol(dev_addr, instance)) {
     case HID_ITF_PROTOCOL_KEYBOARD:
       kb_usb_receive(report);
@@ -97,8 +99,6 @@ void tuh_hid_report_received_cb(u8 dev_addr, u8 instance, u8 const* report, u16 
       tuh_hid_receive_report(dev_addr, instance);
     break;
   }
-  
-  board_led_write(0);
 }
 
 void main() {
@@ -118,4 +118,8 @@ void main() {
     kb_task();
     ms_task();
   }
+}
+
+void reset() {
+  watchdog_enable(100, false);
 }
